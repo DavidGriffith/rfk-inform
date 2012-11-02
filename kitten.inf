@@ -1,6 +1,6 @@
 ! robotfindskitten
 ! A Zen Simulation
-! Release 6 / Serial number 031116 / Inform v6.21
+! Release 7 / Serial number 040523 / Inform v6.21
 !
 !     [-]       |\_/|        http://www.robotfindskitten.org
 !     (+)=C     |o o|__      Leonard Richardson (C) 1997, 2000
@@ -45,8 +45,8 @@
 !	instructions.
 !	
 !	3) Compiling for V5 or higher is required due to "style" calls.
-!	Is there reason why someone would want to compile this for V4 or
-!	previous?
+!	Is there a reason why someone would want to compile this for V4
+!	or previous?
 
 !Switches xv5s;
 
@@ -56,19 +56,18 @@ Switches v5d2;
 ! Number of messages
 ! This must be updated when adding new messages.
 !
-Constant MESSAGE_NUM	764;
+Constant MESSAGE_NUM	800;
 
 Constant Nonkitten_Default 20;
 
 ! Maxmimum possible number of non-kitten items on the playfield at once.
 ! For whatever reason, this cannot be set dynamically.
 !
-!Constant Nonkitten_Max	256;
 Constant Nonkitten_Max	589;
 
 
-Release 6;
-Serial "031116";
+Release 7;
+Serial "040523";	! Presumed release date
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -77,7 +76,6 @@ Constant Story "robotfindskitten";
 Constant Headline "^A Zen Simulation^";
 
 
-!
 Constant Anim_Meet	10;	! Number of spaces from the left where
 				!  Robot and Kitten meet during animation.
 
@@ -377,6 +375,11 @@ Challenge release.^
 - Increased maximum difficulty to 589.^
 - Lots more comments in the source code.^
 - Assorted cleanups in the source code.^
+^
+Release 7 / Serial Number 040523^
+Grammatically correct release.^
+- Grammar corrections from the POSIX port added.^
+- More NKIs added (800 total).^
 ^
 ^
 Known Bugs:^
@@ -728,6 +731,7 @@ Global last_right = false;
 	}
 ];
 
+
 [ already_seen_xy x y i;
 	for (i = 0: i < already_count: i++) {
 		if (already_x-->already_count == x &&
@@ -751,7 +755,6 @@ Global last_right = false;
 	kitten_x = get_random_x();
 	kitten_y = get_random_y();
 	kitten_color = get_random_color();
-
 	while (already_seen_xy(kitten_x, kitten_y) == true) {
 		kitten_x = get_random_x();
 		kitten_y = get_random_y();
@@ -763,7 +766,6 @@ Global last_right = false;
 [ init_robot;
 	player_x = get_random_x();
 	player_y = get_random_y();
-
 	while (already_seen_xy(player_x, player_y) == true) {
 		player_x = get_random_x();
 		player_y = get_random_y();
@@ -774,12 +776,10 @@ Global last_right = false;
 [ init_nonkittens i;
 	already_msg_count = 0;
 	last_message = "";
-
 	for (i = 0: i < nonkitten_count: i++) {
 		nonkitten_x-->i = get_random_x();
 		nonkitten_y-->i = get_random_y();
 		nonkitten_color-->i = get_random_color();
-
 		while (already_seen_xy(nonkitten_x-->i, 
 			nonkitten_y-->i) == true) {
 			nonkitten_x-->i = get_random_x();
@@ -807,8 +807,7 @@ Global last_right = false;
 	if (fore == "")
 		fore = Back_def;
 	if (back == "")
-		back = Back_def;
-	
+		back = Back_def;	
 
 	@set_colour fore Back_def;
 	if (character)
@@ -852,6 +851,7 @@ Global last_right = false;
 	return num;
 ];
 
+
 [ get_random_color num;
 	num = random(7) + 2;
 	! 0 and 1 are default color and current color
@@ -876,19 +876,18 @@ Global last_right = false;
 
 
 [ get_random_x;
+	! Maybe this will need to do something more in the future.
 	return random(Width);
 ];
 
 
-[ get_random_y num ok;
-	ok = false;
+[ get_random_y num;
 	! Make sure we don't draw in the status bar.
-	while (ok == false) {
+	while (true) {
 		num = random(Height);
 		if (num > TopBar)
-			ok = true;
+			return num;
 	}
-	return num;
 ];
 
 
@@ -896,7 +895,7 @@ Global last_right = false;
 ! development team.
 !
 ! When this function is uncommented and enabled in
-! the menu, this will cause a script file to be emitted which contains
+! the menu, this will cause a script file to be written which contains
 ! all NKIs properly formatted.
 
 ![ print_all_nki num mystring;
@@ -996,7 +995,7 @@ Global last_right = false;
 79:	return "A toenail?  What good is a toenail?";
 80:	return "You've found the fish!  Not that it does you much good in this game.";
 81:	return "A Buttertonsils bar.";
-82:	return "One of the few remaining discoes.";
+82:	return "One of the few remaining discos.";
 83:	return "Ah, the uniform of a Revolutionary-era minuteman.";
 84:	return "A punch bowl, filled with punch and lemon slices.";
 85:	return "It's nothing but a G-thang, baby.";
@@ -1007,7 +1006,7 @@ Global last_right = false;
 90:	return "It's a perpetual immobility machine.";
 91:	return "~On this spot in 1962, Henry Winkler was sick.~";
 92:	return "There's nothing here; it's just an optical illusion.";
-93:	return "The World's Biggest Motzah Ball!";
+93:	return "The World's Biggest Matzoh Ball!";
 94:	return "A tribe of cannibals lives here.  They eat Malt-O-Meal for breakfast, you know.";
 95:	return "This appears to be a rather large stack of trashy romance novels.";
 96:	return "Look out!  Exclamation points!";
@@ -1126,7 +1125,7 @@ Global last_right = false;
 207:	return "Vladimir Lenin's casket rests here.";
 208:	return "It's a copy of ~Zen and The Art of Robot Maintenance~.";
 209:	return "This invisible box contains a pantomime horse.";
-210:	return "A mason jar lies here open.  It's label reads: ~do not open!~.";
+210:	return "A mason jar lies here open.  Its label reads: ~do not open!~.";
 211:	return "A train of thought chugs through here.";
 212:	return "This jar of pickles expired in 1957.";
 213:	return "Someone's identity disk lies here.";
@@ -1143,7 +1142,7 @@ Global last_right = false;
 224:	return "It's a Dvorak keyboard.";
 225:	return "It's a cardboard box full of 8-tracks.";
 226:	return "Just a broken hard drive containg the archives of Nerth Pork.";
-227:	return "A broken metronome sits here, it's needle off to one side.";
+227:	return "A broken metronome sits here, its needle off to one side.";
 228:	return "A sign reads: ~Go home!~";
 229:	return "A sign reads: ~No robots allowed!~";
 230:	return "It's the handheld robotfindskitten game, by Tiger.";
@@ -1707,6 +1706,47 @@ Global last_right = false;
 762:	return "It's a box of pinball machine parts.";
 763:	return "You've discovered an enormous pile of socks.";
 764:	return "It's a photograph of Kitten.";
+
+! The following Non Kitten Items were added by David Griffith for
+! Release 7
+!
+765:	return "It's a copy editor, reading aloud from the Associated Press Stylebook.";
+765:	return "It's a copy editor, reading aloud from the MLA Stylebook.";
+766:	return "Kitty kibble is scattered all about.";
+767:	return "A bartender growls, ~No robots allowed!~";
+768:	return "It's a Franklin Ebookman.";
+769:	return "It's a child's kitten pull-toy.";
+770:	return "~I'm Speed Racer and I drive real fast!~";
+771:	return "~I drive real fast.  I'm gonna last.~";
+772:	return "~I'm a big pirate and I like to steal!~";
+773:	return "~I like to steal and I like to kill!~";
+774:	return "~I'm a Barbie doll but I've got brains!~";
+775:	return "~I'm your doctor and here's the bill.~";
+776:	return "Go! Go! Go, Speed Racer!";
+777:	return "It's a Boeing 777 airliner.";
+778:	return "Someone is taking time out for fun here.";
+779:	return "You see a street lamp and a lamplighter here.";
+780:	return "A broken cricket bat.";
+781:	return "It's a mint-condition IMSAI 8080 computer!";
+782:	return "A hollow voice says ~xyzzy~.";
+783:	return "Wimpy is here asking for a hamburger.";
+784:	return "You found Olive Oyl!";
+785:	return "It's Popeye!";
+786:	return "Bluto is here looking for Olive Oyl.";
+787:	return "~Et tu, Brutus?~";
+788:	return "The bodily remains of a Roman emperor.";
+789:	return "Yay! It's a hoola hoop!";
+790:	return "The Smart Patrol is here.";
+791:	return "It's an old sandal.";
+792:	return "It's a feather duster.";
+793:	return "It's a zipper.";
+794:	return "It's an old crumhorn with a broken reed.";
+795:	return "A sticky old cough drop.";
+796:	return "A jar of buttons.";
+797:	return "A bearded dragon lizard is sitting here.";
+798:	return "A garden toad.";
+799:	return "A garden gnome.";
+800:	return "A garden weasel.";
 
 default: return "Unknown NKI (this should not happen)";
 	}
