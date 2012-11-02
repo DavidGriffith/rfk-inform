@@ -1,6 +1,6 @@
 ! robotfindskitten
 ! A Zen Simulation
-! Release 4 / Serial number 030131 / Inform v6.21
+! Release 5 / Serial number 030524 / Inform v6.21
 !
 !     [-]       |\_/|        http://www.robotfindskitten.org
 !     (+)=C     |o o|__      Leonard Richardson (C) 1997, 2000
@@ -52,7 +52,7 @@ Switches v5;
 ! Number of messages
 ! This must be updated when adding new messages.
 !
-Constant MESSAGE_NUM	561;
+Constant MESSAGE_NUM	602;
 
 Constant Nonkitten_Default 20;
 
@@ -64,8 +64,8 @@ Constant Nonkitten_Default 20;
 Constant Nonkitten_Max	256;
 
 
-Release 4;
-Serial "030131";
+Release 5;
+Serial "030524";
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -330,13 +330,13 @@ Reimplemented in Inform by David Griffith (C) 2002.^
 ^
 This code is freely redistributable.  Do with it what you will, but
 don't go about claiming you wrote it.  I, David Griffith, retain
-copyright on this program except for the NKIs imported from the POSIX
-imported from the master (aka POSIX) port.^
+copyright on this program except for the NKIs imported from the master
+(aka POSIX) port.^
 ^
 Lots more information on robotfindskitten is available at
 http://www.robotfindskitten.org.^
 ^
-To submit new NKI's please go to the above URL.^
+To submit new NKI's, please go to the above URL.^
 ^
 ^
 Release History:^
@@ -367,26 +367,32 @@ Light overhaul release.^
 - Merged in new NKIs from the new POSIX release of robotfindskitten.^
 - More NKIs added (561 total).^
 ^
+Release 5 / Serial Number 030524^
+Even more NKIs release.^
+- Idiotic typos fixed.^
+- More NKIs added (602 total).^
+^
 ^
 Known Bugs:^
 ^
 1) I still don't know why already_seen_xy() occasionally causes Robot to
-get placed on top of another object.  Fortunately this seems to happen
-only very rarely and typically only if the difficulty is set to more
-than 200.^
+get placed on top of another object when a game is started.  Fortunately
+this seems to happen only very rarely and typically only if the
+difficulty is set to more than 200.  This bug also seems to very
+occasionally put Kitten underneath an NKI.^
 ^
-2) Under Windows Frotz, Robot used to appear as a solid block.  This was
-because of a bug in Windows Frotz which incorrectly makes the cursor 
-opaque.  The cursor is now moved off to the upper-right corner so that
-the game looks okay on terminals that use something other than reverse
-for the cursor.  I still can't figure out how to make Inform hide the
-cursor completely.  At least on xterm and NetBSD's console,
-@@64set_cursor -1 doesn't work.^
+2) Under earlier versions of Windows Frotz, Robot used to appear as a
+solid block. This was because of a bug in Windows Frotz which
+incorrectly makes the cursor opaque.  The cursor is now moved off to
+the upper-right corner so that the game looks okay on terminals that use
+something other than reverse for the cursor.  I still can't figure out
+how to make Inform hide the cursor completely.  At least on xterm and
+NetBSD's console, @@64set_cursor -1 doesn't work.^
 ^
-3) Under Windows Frotz, an annoying [MORE] prompt appears at the main
-menu.  This is another bug in Windows Frotz which causes the
-interpreter to follow Windows' suggestion something less than 24 or 25
-lines is okay.^
+3) Under Windows Frotz, an annoying [MORE] prompt might appear at the
+main menu.  This is another bug in Windows Frotz which causes the
+interpreter to follow Windows' suggestion that something less than 24 or
+25 lines is okay.^
 ^
 ^
 Other Stuff:^
@@ -1151,7 +1157,7 @@ Global last_right = false;
 233:	return "A wireframe model of a hot dog rotates in space here.";
 234:	return "Just the empty husk of a locust.";
 235:	return "You disturb a murder of crows.";
-236:	return "It's a copy of the RobotFindsKitten EULA.";
+236:	return "It's a copy of the robotfindskitten EULA.";
 237:	return "It's Death.";
 238:	return "It's an autographed copy of ~Secondary Colors~, by Bob Ross.";
 239:	return "It is a marzipan dreadnought that appears to have melted and stuck.";
@@ -1496,6 +1502,50 @@ Global last_right = false;
 560:	return "It's an inverted billiard ball!";
 561:	return "The spectre of Sherlock Holmes wills you onwards.";
 
+! The following Non Kitten Items were added by David Griffith for
+! Release 5
+!
+562:	return "It's a cookie shaped like a kitten.";
+563:	return "It's Professor Feedlebom.";
+564:	return "A bottle of smelling salts.";
+565:	return "Dinsdale!";
+566:	return "An Enfield Mk3 rifle.";
+567:	return "An M16 rifle.";
+568:	return "An M1911A1 pistol.";
+569:	return "An M9 pistol.";
+570:	return "It's a gun of some sort.";
+571:	return "An FN-FAL rifle.";
+572:	return "An old rusty revolver.";
+573:	return "An AK-47 rifle.";
+574:	return "An AK-97 rifle.";
+575:	return "A Remington 870 shotgun.";
+576:	return "It's a NetBSD install CD.";
+577:	return "It's a recursive recursive recursive recursive recursive...";
+578:	return "It's Brian Kernigan.";
+579:	return "It's Dennis Ritchie.";
+580:	return "It's nothing in particular.";
+581:	return "Just a box of backscratchers.";
+582:	return "An expired transistor.";
+583:	return "Air.";
+584:	return "A steam-powered bunnytron.";
+585:	return "Heeeeeeeeeeeeres Johnny!";
+586:	return "It's a catalog from some company called Infocom.";
+587:	return "A dark-emitting diode.";
+588:	return "A 256 kilobyte write-only memory chip.";
+589:	return "A box of brand-new nixie tubes.";
+590:	return "Alien underwear.";
+591:	return "A sack of hammers.";
+592:	return "A sack of wet mice.";
+593:	return "A sack of doorknobs.";
+594:	return "A rusty melon-baller.";
+595:	return "An atomic vector plotter.";
+596:	return "You really don't want to know what this is.";
+597:	return "A 100 meter long chain of jumbo paper clips.";
+598:	return "A cockatoo shrieks at you.";
+599:	return "It's Mary Poppins!";
+600:	return "A slightly-used smellovision set.";
+601:	return "Doodles Weaver is here looking over a horse race schedule.";
+602:	return "An overflowing bit bucket.";
 default: return "Unknown NKI";
 	}
 ];
