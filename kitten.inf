@@ -1,6 +1,6 @@
 ! Robot Finds Kitten
 ! A Zen Simulation
-! Release 1 / Serial number 021123 / Inform v6.21
+! Release 3 / Serial number 021221 / Inform v6.21
 !
 !     [-]       |\_/|        http://www.robotfindskitten.org
 !     (+)=C     |o o|__      Leonard Richardson (C) 1997, 2000
@@ -53,6 +53,12 @@
 ! First public release.
 !
 !
+! Release 3 / Serial Number 0212xx
+! Bugfix release.
+!   Movement keys 'J' and 'K' were swapped by mistake.  Fixed.
+!   Special PalmOS movement key support added.
+!   More NKIs added (401 total).
+!
 
 !Switches xv5s;
 
@@ -62,7 +68,7 @@ Switches v5;
 ! Number of messages
 ! This must be updated when adding new messages.
 !
-Constant MESSAGE_NUM	360;
+Constant MESSAGE_NUM	401;
 
 Constant Nonkitten_Default 20;
 
@@ -71,8 +77,8 @@ Constant Nonkitten_Default 20;
 Constant Nonkitten_Max	256;
 
 
-Release 2;
-Serial "021216";
+Release 3;
+Serial "021221";
 
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -81,6 +87,8 @@ Constant Story "Robot Finds Kitten";
 Constant Headline "^A Zen Simulation^";
 
 Constant Anim_Meet	10;
+
+Global Palm_Movement = false;
 
 Global Height = 0;
 Global Width = 0;
@@ -126,6 +134,9 @@ Global Real_Release = 0;
 	!
 	Real_Release = (0-->1)&$03ff;
 
+	Width = $22-->0;
+	Height = $24-->0;
+
 	main_menu();	
 	while (true) {
 		key = getkey();
@@ -136,7 +147,10 @@ Global Real_Release = 0;
 			init_robot();
 			while (findkitten())
 				;
-		'D':	nonkitten_count = set_nonkitten_count();
+		'D':	set_nonkitten_count();
+		'P':	set_palm_mode();
+!		'W':	set_width(10, 255);
+!		'H':	set_height(10, 255);
 		'I':	print_instructions();
 		'A':	print_about();
 		'T':	print_thoughts();
@@ -150,9 +164,6 @@ Global Real_Release = 0;
 	
 
 [ main_menu;
-	Width = $22-->0;
-	Height = $24-->0;
-
 	@erase_window $ffff;
 	@split_window 11;
 	@set_window 1;
@@ -176,6 +187,11 @@ Global Real_Release = 0;
 
 	print "  F) Find Kitten^";
 	print "  D) Difficulty  (", nonkitten_count, ")^";
+	print "  P) Palm movement keys (";
+		if (palm_movement) print "on"; else print "off";
+		print ")^";
+!	print "  W) Width  (", Width, ")^";
+!	print "  H) Height (", Height, ")^";
 	print "  I) Instructions^";
 	print "  T) Thoughts^";
 	print "  A) About^";
@@ -214,11 +230,45 @@ Global Real_Release = 0;
 	new_line;
 ];
 
+[ set_palm_mode key;
+
+	@erase_window $ffff;
+	@split_window 5;
+	@set_window 1;
+	Banner();
+	draw_horiz(TopBar);
+	@set_window 0;
+
+	print "This mode allows you to use the compass rose
+	control commonly presented by PalmOS-based Z-machine
+	interpreters.^
+	^
+	Turn on PalmOS mode? (y/n) > ";
+
+	key = getkey();
+	switch (key) {
+	'Y':
+		Palm_Movement = true;
+		print "Y^^PalmOS mode activated.";
+	'N':
+		Palm_Movement = false;
+		print "N^^PalmOS mode deactivated.";
+	default: 
+		if (key ~= $000d)
+			print (char) key;
+
+		print "^^No change.";
+	}
+
+	print "^^[Press any key to continue.] ";
+	getkey();
+	return;
+];
+
 Constant INBUFSIZE 80;
 Array inbuf -> INBUFSIZE;
 
-[ set_nonkitten_count inbufvar ix cx len val maxnum;
-
+[ set_nonkitten_count maxnum val;
 	while (true) {
 		@erase_window $ffff;
 		@split_window 5;
@@ -234,8 +284,69 @@ Array inbuf -> INBUFSIZE;
 		} 
 
 		print "^Please enter the number of nonkittens you
-		  wish to search through.^(1 to ", maxnum, " only)^^> ";
+			wish to search through.^(1 to ", maxnum, " only)^^> ";
 
+		while (true) {
+			val = get_number(1, maxnum, nonkitten_count);
+			if (val == -1) {
+				break;
+			} else {
+				nonkitten_count = val;
+				return;
+			}
+		}
+	}
+];
+
+
+![ set_width min max val;
+!	while (true) {
+!		@erase_window $ffff;
+!		@split_window 5;
+!		@set_window 1;
+!		Banner();
+!		draw_horiz(TopBar);
+!		@set_window 0;
+!		print "^Set playfield width 
+!			(", min, " to ", max, ")^^> ";
+!		while (true) {
+!			val = get_number(min, max, Width);
+!			if (val == -1) {
+!				break;
+!			} else {
+!				Width = val;				
+!				return;
+!			}
+!		}
+!	}
+!];
+
+
+![ set_height min max val;
+!	while (true) {
+!		@erase_window $ffff;
+!		@split_window 5;
+!		@set_window 1;
+!		Banner();
+!		draw_horiz(TopBar);
+!		@set_window 0;
+!		print "^Set playfield height
+!			(", min, " to ", max, ")^^> ";
+!		while (true) {
+!			val = get_number(min, max, Height);
+!			if (val == -1) {
+!				break;
+!			} else {
+!				Height = val;				
+!				return;
+!			}
+!		}
+!	}
+!];
+
+
+[ get_number min max init inbufvar ix cx len val;
+	while (true) {
 		inbuf->0 = (INBUFSIZE-3);
 		inbuf->1 = 0;
 		inbufvar = inbuf;
@@ -249,34 +360,32 @@ Array inbuf -> INBUFSIZE;
 		if (cx < len && inbuf->(2+cx) == '.')
 			break;
 
-		! If user just hit return, use what we have already.
+		! If user just hit return, use what we have already. 
 		if (len == 0)
-			return nonkitten_count;
-
+			return init;
 		if (cx == len || inbuf->(2+cx) < '0' || inbuf->(2+cx) > '9') {
-			print "Please enter a value from 1 to ",
-			  maxnum, ", or Enter by itself to exit.^";
-			print "[Press any key to continue.] ";
+			print "Please enter a value from ", min, " to ", max,
+				", or Enter by itself to exit.^
+				[Press any key to continue.] ";
 			getkey();
-			continue;
+			return -1;
 		}
-
 		val = 0;
 		while (cx < len && inbuf->(2+cx) >= '0' && inbuf->(2+cx) <= '9') {
 			val = val * 10 + (inbuf->(2+cx) - '0');
 			cx++;
 		}
-
-		if (val < 1 || val > Nonkitten_Max) {
-			print "Please enter a value from 1 to ",
-			  maxnum, ", or Enter by itself to exit.^";
-			print "[Press any key to continue.] ";
+		if (val < min || val > max) {
+			print "Please enter a value from ", min, " to ", max,
+				", or Enter by itself to exit.^
+				[Press any key to continue.] ";
 			getkey();
-			continue;
+			return -1;
 		} else break;
 	}
 	return val;
 ];
+
 
 [ print_about;
 	@erase_window $ffff;
@@ -308,11 +417,17 @@ debugging purposes.^
 Release 2 / Serial Number 021216^
 First public release.^
 ^
+Release 3 / Serial Number 021221^
+Bugfix release.^
+- Movement keys 'J' and 'K' were swapped by mistake.  Fixed.^
+- Special PalmOS movement key support added.^
+- More NKIs added (401 total).^
+^
 ^
 Known Bugs:^
 ^
-1) Some bug (I don't know where) in already_seen_xv() seems cause Robot
-to occasionally get placed on top of another object.^
+1) Some bug (I don't know where) in already_seen_xv() causes Robot to
+occasionally get placed on top of another object.^
 ^
 2) Under Windows Frotz, the Robot used to appear as a solid block.  This
 was because of a bug in Windows Frotz which incorrectly makes the cursor 
@@ -332,9 +447,14 @@ Other Stuff:^
 ^
 1) Is it worth the trouble to implement colors?^
 ^
-2) Since there is already a native version of RFK for PalmOS machines,
-modifying this version to make it more usable on PalmOS probably doesn't
-make sense.^
+2) The PalmOS mode works by getting a one or two key sequence from the
+keyboard (N, S, E, W, NW, SW, NE, SE) followed by a carriage return.
+These are translated into the numbers found on a typical numeric
+keypad (8, 2, 6, 4, 7, 1, 9, 3).^
+^
+3) Implemented control of the playfield size for Frobnitz
+users.  Results were not satisfactory.  The code for this remain in the
+source, but commented out.^
 ^
 [Press any key to continue.] "; 
 
@@ -477,11 +597,17 @@ Global last_right = false;
 
 	@set_cursor 1 Width;
 
-	key = getkey();
+
+	if (Palm_Movement) {
+		key = get_palm_move();
+	} else {
+		key = getkey();
+	}
+
 	switch (key) {
 	'Q', $1b:	rfalse;			! exit game ($1b == Esc)
-	'8', 'J', 129:	player_y--;		! up
-	'2', 'K', 130:	player_y++;		! down
+	'8', 'K', 129:	player_y--;		! up
+	'2', 'J', 130:	player_y++;		! down
 	'4', 'H', 131:	player_x--;		! left
 			last_right = false;
 	'6', 'L', 132:	player_x++;		! right
@@ -496,6 +622,7 @@ Global last_right = false;
 	'3', 'N':	player_y++; player_x++;	! down-right
 			last_right = true;
 	}
+
 	if (player_y <= TopBar+1)
 		player_y = TopBar + 1;
 	if (player_y > Height)
@@ -520,8 +647,8 @@ Global last_right = false;
 
 			! prevent Robot from walking through the object.
 			switch (key) {
-			'8', 'J', 129:	player_y++;
-			'2', 'K', 130:	player_y--;
+			'8', 'K', 129:	player_y++;
+			'2', 'J', 130:	player_y--;
 			'4', 'H', 131:	player_x++;
 			'6', 'L', 132:	player_x--;
 			'7', 'Y':	player_y++; player_x++;
@@ -532,6 +659,38 @@ Global last_right = false;
 		}
 	}
 	rtrue;
+];
+
+
+[ get_palm_move key1 key2 key3;
+	key1 = getkey();
+	key2 = getkey();
+	if (key2 == $000d) {
+		switch (key1) {
+		'N': return '8';
+		'S': return '2';
+		'E': return '6';
+		'W': return '4';
+		'Q': return 'Q';
+		$1b: return $1b;
+		default: return 'Z';
+		}
+	}
+	key3 = getkey();
+	if (key3 == $000d) {
+		switch (key1) {
+		'N':
+			if (key2 == 'W') return '7';
+			if (key2 == 'E') return '9';
+			return 'Z';
+		'S':
+			if (key2 == 'W') return '1';
+			if (key2 == 'E') return '3';
+			return 'Z';
+		default:
+			return 'Z';
+		}
+	} else return 'Z';
 ];
 
 
@@ -1116,5 +1275,50 @@ Global last_right = false;
 358:	return "A green yo-yo.";
 359:	return "A hairless rat.";
 360:	return "Bright copper kettles.";
+
+! The following Non Kitten Items were added by David Griffith for
+! Release 3
+!
+361:	return "Ten yards of avocado-green shag carpet.";
+362:	return "A zorkmid coin!";
+363:	return "It's Babe Flathead's favorite bat.";
+364:	return "It's cute like a kitten, but isn't a kitten.";
+365:	return "A cyclops glowers angrily at you.";
+366:	return "A discarded pop bottle.";
+367:	return "Definitely not Kitten.";
+368:	return "A mouse.";
+369:	return "Slack!";
+370:	return "A troll.  Ewww!!!";
+371:	return "A tube of white lithium grease.  Perfect for your robotic joints.";
+372:	return "Talcum powder.";
+373:	return "A breadbox.  Nope, Kitten isn't in the breadbox.";
+374:	return "An unlicensed nuclear accelerator.";
+375:	return "A sub-atomic particle languishes here all alone.";
+376:	return "A bowling ball with the name ~Bob~ inscribed on it.";
+377:	return "A briefcase filled with spy stuff.";
+378:	return "Is that an elephant's head or a winged sandal?";
+379:	return "Bibbidy bibbidy bibbidy bibbidy bibbidy bibbidy...";
+380:	return "A tube of toothpaste.  Too bad you have no teeth.";
+381:	return "This isn't the item you're looking for.";
+382:	return "A discarded refrigerator box.  Nope, Kitten isn't in the box.";
+383:	return "A paper shopping bag.  Nope, Kitten isn't in the bag.";
+384:	return "A flyer reads, ~Please donate hydraulic fluid~";
+385:	return "A dangly thing mangled by Kitten.";
+386:	return "A crouton.";
+387:	return "A patch from the Mammoth Caves.";
+388:	return "A leather pouch filled with multisided dice.";
+389:	return "A pair of combat boots.";
+390:	return "A pile of coconuts.";
+391:	return "A big bass drum bearing a hole and suspicious clawmarks.";
+392:	return "It's a clue!";
+393:	return "Long lost needle nose pliers.";
+394:	return "A vase of roses.";
+395:	return "A crystal ball.  It doesn't seem to know where Kitten is.";
+396:	return "It's Princess Leia, the yodel of life.";
+397:	return "Sigmund Freud is here asking about your mother.";
+398:	return "BURRRRP!!!!  Flavorful and full of protein!";
+399:	return "A jar of library paste.";
+400:	return "These aren't ordinary beans.  They're magic beans!";
+401:	return "Some sort of electronic handheld game from the 1970s.";
 	}
 ];
