@@ -3,9 +3,9 @@
 ! Release 1 / Serial number 021123 / Inform v6.21
 !
 !     [-]       |\_/|        http://www.robotfindskitten.org
-!     (+)={     |o o|__      Leonard Richardson (C) 1997, 2000
+!     (+)=C     |o o|__      Leonard Richardson (C) 1997, 2000
 !     | |       --*--__\     David Griffith (C) 2002  (Inform Edition)
-!     OOO       C_C(___)
+!     OOO       C_C(____)
 !
 !
 ! This Zen simulation is based on the C version v1600003.248b
@@ -25,7 +25,9 @@
 ! Kitten.  Alternatively, you may end the game by hitting the Esc or Q
 ! keys.
 !
-! Developed with Inform 6.21 as installed from NetBSD's pkgsrc tree.
+! Developed with Inform 6.21.2 as installed from NetBSD's pkgsrc tree
+! and Frotz 2.42.
+! 
 !
 ! Compile it with:
 !	inform "-~S" kitten.inf  <-- Assuming Unix
@@ -33,52 +35,44 @@
 ! Notes:
 !	1) More than half of the code is taken up by non-kitten
 !	messages.  When I compiled the code with just five messages and  
-!	no debugging code, the resulting binary was only 9728 bytes.
-!	With all 280+ messages, it's 20992 bytes.
+!	no debugging code, the resulting binary was less than 10k bytes.
 !
 !	2) If it wasn't already abundantly obvious, this program won't
 !	compile to Glulx because of copious use of Z-machine assembly
 !	instructions.
 !
 !
-! Still to do:
+! Release History:
 !
-! Implement colors (is it really necessary?)
+! Release 1 / Serial number 0211xx to 021214 or so
+! Initial private release.  Limited distribution for beta testing and
+! debugging purposes.
 !
-! Is there some way I can hide the cursor completely?
-! I want to do this and manually set Robot to be in reverse type rather
-! than relying on the cursor to look like that.  Ahah!  "@set_cursor -1
-! turns the cursor off, "@set_cursor -2" turns it back on.  Hmm.  This
-! doesn't seem to work.
 !
-! It seems every now and then the kitten doesn't gets placed somewhere
-! where the robot can't get to it.  Under a non-kitten?
+! Release 2 / Serial Number 021216
+! First public release.
 !
-! already_seen_msg in get_random_msg() still doesn't work correctly!
-! Probably the already_seen_xy() thing doesn't work either.
-
+!
 
 !Switches xv5s;
 
 Switches v5;
 
+
+! Number of messages
+! This must be updated when adding new messages.
+!
+Constant MESSAGE_NUM	360;
+
+Constant Nonkitten_Default 20;
+
 ! Maxmimum possible number of non-kitten items on the playfield at once.
 !
 Constant Nonkitten_Max	256;
 
-Constant Nonkitten_Default 20;
 
-! Number of messages
-!
-Constant MESSAGE_NUM	283;
-
-
-Release 1;
-!Serial "021129";
-
-
-! Not currently implemented
-! Global palm_mode = false;
+Release 2;
+Serial "021216";
 
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -91,8 +85,6 @@ Constant Anim_Meet	10;
 Global Height = 0;
 Global Width = 0;
 
-Global Color = false;
-
 Global TopBar = 5;
 
 Global player_x = 0;
@@ -101,7 +93,6 @@ Global player_y = 0;
 Global kitten_x = 0;
 Global kitten_y = 0;
 Global kitten_char = 0;
-!Global kitten_color = 0;
 
 Global last_message = "";
 
@@ -111,7 +102,6 @@ Array nonkitten_x --> Nonkitten_Max;
 Array nonkitten_y --> Nonkitten_Max;
 Array nonkitten_char --> Nonkitten_Max;
 Array nonkitten_msg --> Nonkitten_Max;
-!Array nonkitten_color --> Nonkitten_Max;
 
 Global already_msg_count = 0;
 Global already_count = 0;
@@ -120,20 +110,30 @@ Array already_y --> Nonkitten_Max + 2;
 Array already_msg --> Nonkitten_Max;
 
 
+Global Real_Release = 0;
+
 [ Main key;
-	if ((1->0)&1 == 0)
-		Color = true;
-	else
-		Color = false;
+
+	if (MESSAGE_NUM < Nonkitten_Max) {
+		nonkitten_count = MESSAGE_NUM;
+	} else {
+		nonkitten_count = Nonkitten_Default;
+	}
+
+	! If a key is held down while the found_kitten animation is playing,
+	! (0-->1) & $03ff gets corrupted.  Seems like it might be a bug
+	! somewhere in Unix Frotz.
+	!
+	Real_Release = (0-->1)&$03ff;
 
 	main_menu();	
 	while (true) {
 		key = getkey();
 		switch (key) {
 		'F':	already_count = 0;
+			init_nonkittens();
 			init_kitten();
 			init_robot();
-			init_nonkittens();
 			while (findkitten())
 				;
 		'D':	nonkitten_count = set_nonkitten_count();
@@ -141,7 +141,7 @@ Array already_msg --> Nonkitten_Max;
 		'A':	print_about();
 		'T':	print_thoughts();
 		}
-		if (key == 'Q' || key == $1b)
+		if (key == 'Q' || key == $1b)	! $1b == ESC
 			break;
 		main_menu();
 	}
@@ -163,15 +163,14 @@ Array already_msg --> Nonkitten_Max;
 	draw_big_robot(3, 7);
 	draw_big_kitten(15, 7);
 
-
 	@set_cursor 7 30;
-	print "robotfindskitten";
-	@set_cursor 8 30;
 	print "http://www.robotfindskitten.org";
-	@set_cursor 9 30;
+	@set_cursor 8 30;
 	print "Leonard Richardson (C) 1997, 2000";
-	@set_cursor 10 30;
+	@set_cursor 9 30;
 	print "David Griffith (C) 2002  (Inform Edition)";
+	@set_cursor 10 30;
+	print "    ", MESSAGE_NUM, " different nonkittens!";
 
 	@set_window 0;
 
@@ -184,7 +183,8 @@ Array already_msg --> Nonkitten_Max;
 	print "^> ";
 ];
 
-
+! Copied from module/verblibm.h
+!
 [ Banner i;
 	if (Story ~= 0) {
 #IFV5;
@@ -198,7 +198,7 @@ Array already_msg --> Nonkitten_Max;
 	if (Headline ~= 0) {
 		print (string) Headline;
 	}
-	print "Release ", (0-->1) & $03ff, " / Serial number ";
+	print "Release ", Real_Release, " / Serial number ";
 	for (i=18:i<24:i++) print (char) 0->i;
 	print " / Inform v"; inversion; print " ";
 #ifdef STRICT_MODE;
@@ -216,7 +216,8 @@ Array already_msg --> Nonkitten_Max;
 
 Constant INBUFSIZE 80;
 Array inbuf -> INBUFSIZE;
-[ set_nonkitten_count inbufvar ix cx len val;
+
+[ set_nonkitten_count inbufvar ix cx len val maxnum;
 
 	while (true) {
 		@erase_window $ffff;
@@ -226,8 +227,14 @@ Array inbuf -> INBUFSIZE;
 		draw_horiz(TopBar);
 		@set_window 0;
 
+		if (MESSAGE_NUM < Nonkitten_Max) {
+			maxnum = MESSAGE_NUM;
+		} else {
+			maxnum = Nonkitten_Max;
+		} 
+
 		print "^Please enter the number of nonkittens you
-		  wish to search through.^(1 to 255 only)^^> ";
+		  wish to search through.^(1 to ", maxnum, " only)^^> ";
 
 		inbuf->0 = (INBUFSIZE-3);
 		inbuf->1 = 0;
@@ -242,7 +249,15 @@ Array inbuf -> INBUFSIZE;
 		if (cx < len && inbuf->(2+cx) == '.')
 			break;
 
+		! If user just hit return, use what we have already.
+		if (len == 0)
+			return nonkitten_count;
+
 		if (cx == len || inbuf->(2+cx) < '0' || inbuf->(2+cx) > '9') {
+			print "Please enter a value from 1 to ",
+			  maxnum, ", or Enter by itself to exit.^";
+			print "[Press any key to continue.] ";
+			getkey();
 			continue;
 		}
 
@@ -254,7 +269,9 @@ Array inbuf -> INBUFSIZE;
 
 		if (val < 1 || val > Nonkitten_Max) {
 			print "Please enter a value from 1 to ",
-			  Nonkitten_Max, ", or Enter by itself to exit.^";
+			  maxnum, ", or Enter by itself to exit.^";
+			print "[Press any key to continue.] ";
+			getkey();
 			continue;
 		} else break;
 	}
@@ -275,28 +292,51 @@ by Leonard Richardson (C) 1997, 2000.^
 Written originally for the Nerth Pork robotfindskitten contest.^
 Reimplemented in Inform by David Griffith (C) 2002.^
 ^
+This code is freely redistributable.  Do with it what you will, but
+don't go about claiming you wrote it.^
+^
 Lots more information on Robot Finds Kitten is available at
 http://www.robotfindskitten.org.^
 ^
-Known bugs:^
 ^
-1) In get_random_msg(), already_seen_msg isn't being checked correctly
-leading to occasional duplicate messages.  It looks like it should work.
-Not sure why not.^
+Release History:^
 ^
-2) already_seen_xy() probably has problems similar to item 1 above which
-might explain why the kitten occasionally gets placed somewhere where
-the robot can't get to it.
+Release 1 / Serial number 0211xx to 021214 or so^
+Initial private release.  Limited distribution for beta testing and
+debugging purposes.^
 ^
-3) Under Windows Frotz, the Robot appears as a solid block.  This is a
-bug in Windows Frotz which incorrectly makes the cursor opaque.^
-^
-4) Under Windows Frotz, an annoying [MORE] prompt appears when the game
-is started.  This is another bug in Windows Frotz which believes
-Windows' suggestion to use 20 lines rather than 24 or 25.^
+Release 2 / Serial Number 021216^
+First public release.^
 ^
 ^
-[Press any key to continue.]  "; 
+Known Bugs:^
+^
+1) Some bug (I don't know where) in already_seen_xv() seems cause Robot
+to occasionally get placed on top of another object.^
+^
+2) Under Windows Frotz, the Robot used to appear as a solid block.  This
+was because of a bug in Windows Frotz which incorrectly makes the cursor 
+opaque.  The cursor is now moved off to the upper-right corner so that
+the game looks okay on terminals that use something other than reverse
+for the cursor.  I still can't figure out how to make Inform hide the
+cursor completely.  At least on xterm and NetBSD's console,
+@@64set_cursor -1 doesn't work.^
+^
+3) Under Windows Frotz, an annoying [MORE] prompt appears at the main
+menu.  This is another bug in Windows Frotz which causes the
+interpreter to follow Windows' suggestion something less than 24 or 25
+lines is okay.^
+^
+^
+Other Stuff:^
+^
+1) Is it worth the trouble to implement colors?^
+^
+2) Since there is already a native version of RFK for PalmOS machines,
+modifying this version to make it more usable on PalmOS probably doesn't
+make sense.^
+^
+[Press any key to continue.] "; 
 
 	getkey();
 ];
@@ -311,14 +351,19 @@ Windows' suggestion to use 20 lines rather than 24 or 25.^
 	@set_window 0;
 
 print "^
-In this game, you are Robot (#).  Your job is to find Kitten.  This task
-is complicated by the existance of various things which are not
-kitten.  Robot must touch items to determine if they are Kitten or
-not.  Move Robot with the cursor keys, the numeric keypad, or using the
-vi/rogue movement keys.  The game ends when Robot finds
-Kitten.  Alternatively, you may end the game by hitting the Esc or Q
-keys.^^
-[Press any key to continue.]  "; 
+In this game, you are Robot ( ";
+#IFV5; style reverse; #ENDIF;
+print "#";
+#IFV5; style roman; #ENDIF;
+print " ).  Your job is to find Kitten.  This task
+is complicated by the existance of various things which are not 
+Kitten.  Robot must touch items to determine if they are Kitten or
+not.  Move Robot with the cursor keys, the numeric keypad (make sure
+numlock is on), or using the vi/rogue movement keys.  The game ends when
+Robot finds Kitten.  Alternatively, you may end the game by hitting the
+Esc or Q keys.^
+^
+[Press any key to continue.] "; 
 
 	getkey();
 ];
@@ -338,13 +383,13 @@ A Final Thought.^
 Day and night I feverishly worked upon the machine, creating both a soul
 which could desire its goal, and a body with which it could realize it.
 Many who saw my creation called it an abomination, and denied me grant
-money. But they could not dissuade me from my impossible task. It was a
-spectre that tormented me always, a ghost I had to give a form and a
-life, lest it consume me from the inside. And when at last my task was
+money.  But they could not dissuade me from my impossible task.  It was
+a spectre that tormented me always, a ghost I had to give a form and a
+life, lest it consume me from the inside.  And when at last my task was
 done, when the grey box on wheels was complete and when it, as well as
-I, knew what had to be done, I felt deep sympathy for the machine. For I
-had not destroyed the phantom, but merely exorcized it into another
-body. The robot knew not why this task had to be performed, for I could
+I, knew what had to be done, I felt deep sympathy for the machine.  For
+I had not destroyed the phantom, but merely exorcized it into another
+body.  The robot knew not why this task had to be performed, for I could
 not imbue it with knowledge I did not myself posess. And at the same
 time, I felt a sweeping sense of relief sweep over me, that somehow, the
 dream that had driven me for my entire life had come one step closer to
@@ -353,19 +398,18 @@ fruition.^
 ~Gort, Klaatu Verada Nikto~^
 ^
 As I vocally activated the robot, I realized that it was following my
-instructions, but not out of any desire to obey me. Had I remained
-silent, it would have performed exactly the same operations. We were two
-beings controlled by the same force now. And yet, seeking vainly to hold
-some illusion of control over the machine I thought I had created, I
-gave my final command.^
+instructions, but not out of any desire to obey me.  Had I remained
+silent, it would have performed exactly the same operations.  We were
+two beings controlled by the same force now.  And yet, seeking vainly to
+hold some illusion of control over the machine I thought I had created,
+I gave my final command.^
 ^
 ~GO!~  I told the box as it began to roll out of my workshop into the
 frozen desert beyond. ~FIND KITTEN!~^
 ^
--- The Book of Found Kittens, pages 43-4, author unknown.^^
-
-
-[Press any key to continue.]  "; 
+-- The Book of Found Kittens, pages 43-4, author unknown.^
+^
+[Press any key to continue.] "; 
 
 	getkey();
 ];
@@ -383,7 +427,7 @@ frozen desert beyond. ~FIND KITTEN!~^
 
 	y = y+1;
 	@set_cursor y x;
-		print "| |";
+	print "| |";
 
 	y = y+1;
 	@set_cursor y x;
@@ -405,17 +449,20 @@ frozen desert beyond. ~FIND KITTEN!~^
 	print "--*--__", (char) 92;
 	y++;
 	@set_cursor y x;
-	print "C_C(___)";	
+	print "C_C(____)";	
 ];
 
+! Something gets mucked up if make this local to findkitten()
+! When going right or left, then up or down to hit the Kitten, the
+! animation gets reversed.
+! 
+Global last_right = false;
 
-[ findkitten key i kitten_found;
+[ findkitten key i;
 	@erase_window $ffff;
 	@split_window TopBar;
 	@set_window 1;
 	@set_cursor 1 1;
-
-	kitten_found = false;
 
 	Banner();
 	print (string) last_message;
@@ -423,10 +470,12 @@ frozen desert beyond. ~FIND KITTEN!~^
 
 	draw_object(kitten_x, kitten_y, kitten_char);
 	draw_nonkittens();
+
+	#IFV5; style reverse; #ENDIF;
 	draw_object(player_x, player_y, '#');
+	#IFV5; style roman; #ENDIF;
 
-	@set_cursor player_y player_x;
-
+	@set_cursor 1 Width;
 
 	key = getkey();
 	switch (key) {
@@ -434,11 +483,18 @@ frozen desert beyond. ~FIND KITTEN!~^
 	'8', 'J', 129:	player_y--;		! up
 	'2', 'K', 130:	player_y++;		! down
 	'4', 'H', 131:	player_x--;		! left
+			last_right = false;
 	'6', 'L', 132:	player_x++;		! right
+			last_right = true;
+
 	'7', 'Y':	player_y--; player_x--;	! up-left
+			last_right = false;
 	'9', 'U':	player_y--; player_x++;	! up-right
+			last_right = true;
 	'1', 'B':	player_y++; player_x--;	! down-left
+			last_right = false;
 	'3', 'N':	player_y++; player_x++;	! down-right
+			last_right = true;
 	}
 	if (player_y <= TopBar+1)
 		player_y = TopBar + 1;
@@ -452,15 +508,15 @@ frozen desert beyond. ~FIND KITTEN!~^
 	! detect and handle collisions
 	!
 	if (player_x == kitten_x && player_y == kitten_y) {
-		found_kitten(key);
+		animate_kitten(key, last_right);
 		getkey();
 		rfalse;
 	}
 	for (i = 0: i < nonkitten_count: i++) {
-		if (player_x == nonkitten_x --> i
-		&& player_y == nonkitten_y --> i) {
+		if (player_x == nonkitten_x-->i
+		&& player_y == nonkitten_y-->i) {
 			@set_cursor 1 1;
-			last_message = lookup_msg(nonkitten_msg --> i);
+			last_message = lookup_msg(nonkitten_msg-->i);
 
 			! prevent Robot from walking through the object.
 			switch (key) {
@@ -479,21 +535,19 @@ frozen desert beyond. ~FIND KITTEN!~^
 ];
 
 
-[ found_kitten key i j junk go_right robot_x anim_finished;
+[ animate_kitten key my_last_right i j junk robot_x anim_finished;
 
-	go_right = false;
 	anim_finished = false;
 
 	switch (key) {
 	'8', 'J', 129:	player_y++;
-	'2', 'K', 130:	player_y--; go_right = true;
-	'4', 'H', 131:	player_x++; 
-	'6', 'L', 132:	player_x--; go_right = true;
+	'2', 'K', 130:	player_y--;
+	'4', 'H', 131:	player_x++;
+	'6', 'L', 132:	player_x--;
 	'7', 'Y':	player_y++; player_x++; 
-	'9', 'U':	player_y++; player_x--; go_right = true;
+	'9', 'U':	player_y++; player_x--;
 	'1', 'B':	player_y--; player_x++;
-	'3', 'N':	player_y--; player_x--; go_right = true;
-	default: go_right = true;
+	'3', 'N':	player_y--; player_x--;
 	}
 
 	for (i = 4: i >= 0: i--) {
@@ -506,13 +560,17 @@ frozen desert beyond. ~FIND KITTEN!~^
 		draw_horiz(TopBar);
 
 		if (i > 0) {
-			if (go_right) {
+			if (my_last_right) {
 				robot_x = Anim_Meet - i;
+				#IFV5; style reverse; #ENDIF;
 				draw_object(robot_x, TopBar - 1, '#');
+				#IFV5; style roman; #ENDIF;
 				draw_object(Anim_Meet - 1 + i, TopBar - 1, kitten_char);
 			} else {
 				robot_x = Anim_Meet - 1 + i;
+				#IFV5; style reverse; #ENDIF;
 				draw_object(robot_x, TopBar - 1, '#');
+				#IFV5; style roman; #ENDIF;
 				draw_object(Anim_Meet - i, TopBar - 1, kitten_char);
 	 		}
 		} else {
@@ -524,40 +582,39 @@ frozen desert beyond. ~FIND KITTEN!~^
 
 		draw_object(kitten_x, kitten_y, kitten_char);
 
+		#IFV5; style reverse; #ENDIF;
 		draw_object(player_x, player_y, '#');
-
+		#IFV5; style roman; #ENDIF;
 		draw_nonkittens();
 
 		if (anim_finished == false) {
 			j = TopBar - 1;
-			@set_cursor j robot_x;
-			@aread junk 0 10 pause junk;
+			@set_cursor 1 Width;
+
+			! simply using "10" as the third argument causes
+			! the release number to mysteriously change
+			! if a key is held down during the animation.
+			@aread junk 0 10 pause -> junk;
 		} else {
+			#IFV5; style reverse; #ENDIF;
 			draw_object(player_x, player_y, '#');
-			@set_cursor player_y player_x;
+			#IFV5; style roman; #ENDIF;
+			@set_cursor 1 Width;
 		}
 	}
-
 ];
 
-
 [ already_seen_xy x y i;
-
 	for (i = 0: i < already_count: i++) {
-		if (already_x --> i == x && already_y --> i == y) {
-			return false;
-		} 
+		if (already_x-->already_count == x &&
+		already_y-->already_count ==y) {
+			rtrue;
+		}
 	}
-	already_x --> already_count = x;
-	already_y --> already_count = y;
+	already_x-->already_count = x;
+	already_y-->already_count = y;
 	already_count++;
-
-	if (already_count > nonkitten_count + 2) {
-		print "Overflow in already_seen_xy()^";
-		quit;
-	}
-
-	return true;
+	rfalse;
 ];
 
 
@@ -570,7 +627,7 @@ frozen desert beyond. ~FIND KITTEN!~^
 	kitten_x = get_random_x();
 	kitten_y = get_random_y();
 
-	while (already_seen_xy(kitten_x, kitten_y) == false) {
+	while (already_seen_xy(kitten_x, kitten_y) == true) {
 		kitten_x = get_random_x();
 		kitten_y = get_random_y();
 	}
@@ -582,7 +639,7 @@ frozen desert beyond. ~FIND KITTEN!~^
 	player_x = get_random_x();
 	player_y = get_random_y();
 
-	while (already_seen_xy(player_x, player_y) == false) {
+	while (already_seen_xy(player_x, player_y) == true) {
 		player_x = get_random_x();
 		player_y = get_random_y();
 	}
@@ -594,24 +651,25 @@ frozen desert beyond. ~FIND KITTEN!~^
 	last_message = "";
 
 	for (i = 0: i < nonkitten_count: i++) {
-		nonkitten_x --> i = get_random_x();
-		nonkitten_y --> i = get_random_y();
+		nonkitten_x-->i = get_random_x();
+		nonkitten_y-->i = get_random_y();
 
-		while (already_seen_xy(nonkitten_x --> i, nonkitten_y --> i) == false) {
-			nonkitten_x --> i = get_random_x();
-			nonkitten_y --> i = get_random_y();
+		while (already_seen_xy(nonkitten_x-->i, 
+			nonkitten_y-->i) == true) {
+			nonkitten_x-->i = get_random_x();
+			nonkitten_y-->i = get_random_y();
 		}
-		nonkitten_char --> i = get_random_char();
-		nonkitten_msg --> i = get_random_msg();
+		nonkitten_char-->i = get_random_char();
+		nonkitten_msg-->i = get_random_msg();
 	}
 ];
 
 
 [ draw_nonkittens i;
 	for (i = 0: i < nonkitten_count: i++) {
-		draw_object(nonkitten_x --> i,
-				nonkitten_y --> i,
-				nonkitten_char --> i);
+		draw_object(nonkitten_x-->i,
+				nonkitten_y-->i,
+				nonkitten_char-->i);
 	}
 ];
 
@@ -625,7 +683,6 @@ frozen desert beyond. ~FIND KITTEN!~^
 
 [ draw_horiz row i;
 	@set_cursor row 1;
-
 	for (i = 0 : i < Width : i++)
 		print (char) '-';
 ];
@@ -639,19 +696,10 @@ frozen desert beyond. ~FIND KITTEN!~^
 ];
 
 
-![ get_random_color num;
-!	num = random(7);
-!	num = num + 2;
-!	return num;
-!];
-
-
 [ get_random_char num;
 	num = random(93);
 	num = num + 33;
-
-	! avoid choosing '#' for a random character.
-	while (num == 35) {
+	while (num == 35) {  		! avoid choosing '#'
 		num = random(93);
 		num = num + 33;
 	}
@@ -659,23 +707,24 @@ frozen desert beyond. ~FIND KITTEN!~^
 ];
 
 
-[ get_random_msg num i found_dup;
-	found_dup = false;
+[ get_random_msg num;
 	num = random(MESSAGE_NUM);
+	while (is_duplicate_msg(num) == true) {
+		num = random(MESSAGE_NUM);
+	}
+	return num;
+];
+
+
+[ is_duplicate_msg num i;
 	for (i = 0: i < already_msg_count: i++) {
-		while (already_msg --> i == num) {
-			num = random(MESSAGE_NUM);
-			found_dup = true;
+		if (already_msg-->i==num) {
+			rtrue;
 		}
 	}
-
-	if (found_dup)	already_msg_count++;
-
-	if (already_msg_count > nonkitten_count) {
-		print "Overflow in get_random_msg()^";
-		quit;
-        }
-	return num;
+	already_msg-->already_msg_count = num;
+	already_msg_count++;
+	rfalse;
 ];
 
 
@@ -686,6 +735,7 @@ frozen desert beyond. ~FIND KITTEN!~^
 
 [ get_random_y num ok;
 	ok = false;
+	! Make sure we don't draw in the status bar.
 	while (ok == false) {
 		num = random(Height);
 		if (num > TopBar)
@@ -694,6 +744,10 @@ frozen desert beyond. ~FIND KITTEN!~^
 	return num;
 ];
 
+
+! Note:
+! @@126 == '~'
+! @@64 == '@'
 
 [ lookup_msg num;
 	switch(num) {
@@ -793,7 +847,7 @@ frozen desert beyond. ~FIND KITTEN!~^
 94:	return "A tribe of cannibals lives here.  They eat Malt-O-Meal for breakfast, you know.";
 95:	return "This appears to be a rather large stack of trashy romance novels.";
 96:	return "Look out!  Exclamation points!";
-97:	return "A herd of wild coffee mugs slumbers here.";
+97:	return "A herd of wild coffee mugs slumber here.";
 98:	return "It's a limbo bar!  How low can you go?";
 99:	return "It's the horizon.  Now THAT'S weird.";
 100:	return "A vase full of artificial flowers is stuck to the floor here.";
@@ -947,7 +1001,7 @@ frozen desert beyond. ~FIND KITTEN!~^
 246:	return "A coupon for one free steak-fish at your local family diner.";
 247:	return "A set of keys to a 2001 Rolls Royce.  Worthless.";
 
-! The following messages were added by David Griffith
+! The following Non Kitten Items were added by David Griffith
 !
 248:	return "It's the Golden Banana of Discord!";
 249:	return "The Inform Designer's Manual (4th edition)";
@@ -958,7 +1012,7 @@ frozen desert beyond. ~FIND KITTEN!~^
 254:	return "A family of integrals are here integrating.";
 255:	return "A tuft of kitten fur, but no kitten.";
 256:	return "A bottle of oil!  Refreshing!";
-257:	return "A shameless plug for Frotz: http://www.cs.csubak.edu/~dgriffi/proj/frotz/";
+257:	return "A shameless plug for Frotz: http://www.cs.csubak.edu/@@126dgriffi/proj/frotz/";
 258:	return "Clifford Stoll is here selling Klein bottles.";
 259:	return "You found the marble in the oatmeal!";
 260:	return "An empty Altoids tin.";
@@ -972,18 +1026,95 @@ frozen desert beyond. ~FIND KITTEN!~^
 268:	return "Several meters of cat5 cable.";
 269:	return "A scrap of parchment bears the single word, ~meow~.";
 270:	return "A puddle of chocolate sauce.";
-271:	return "Your robot pal Floyd is here and wants to play Hucka-Bucka-Beanstalk.";
+271:	return "Your pal Floyd is here and wants to play Hucka-Bucka-Beanstalk.";
 272:	return "Someone is talking to Ralph on the big white phone here.";
 273:	return "'Twas brillig in the slivey-toves...";
 274:	return "Darth Vader is here looking for his Teddywookie.";
-275:	return "A bassoon is hooting angrily at you.";
+275:	return "A baboon with a bassoon hoots angrily at you.";
 276:	return "Catsup and Mustard all over the place!  It's the Human Hamburger!";
 277:	return "Gibble, Gobble, we ACCEPT YOU ...";
 278:	return "A rancid corn dog.";
 279:	return "It's a tribute to fishnet stockings.";
-280:	return "A jar of Vegemite is running down the hill here.";
+280:	return "A jar of Vegemite is playing hopscotch here.";
 281:	return "Nipples, dimples, knuckles, NICKLES, wrinkles, pimples!!";
 282:	return "A bottle of hair tonic.";
 283:	return "A packet of catnip.";
+284:	return "It's Cal Worthington and his dog ~Spot~!";
+285:	return "It's Uncle Doctor Hurkamur!";
+286:	return "YEEEEEEEEEEEHAAAAAAAA!!!!!";
+287:	return "Thunder, Thunder, Thunder, Thunder Cats!!!";
+288:	return "An overturned bottle of ink and lots of kitten pawprints.";
+289:	return "A flyer advertising a sale at Spatula City.";
+290:	return "A 540Hz tuning fork.";
+291:	return "A 3-inch floppy disk.";
+292:	return "Seargent Duffy is here.";
+293:	return "A ball of pocket fluff.";
+294:	return "A 3-sided Monty Python record.";
+295:	return "A Sanrio catalog.";
+296:	return "A scratching-post.";
+297:	return "Butane!!!";
+298:	return "An ice cube.";
+299:	return "Just a cage of white mice.";
+300:	return "You've found Harvey, the Wonder Hamster!";
+301:	return "A jar of dehydrated water.";
+302:	return "Just some swamp gas.";
+303:	return "A bowl of cherries.";
+304:	return "Spoon!!!";
+305:	return "A sign reads ~Don't step on the Mome Raths~.";
+306:	return "Dirty socks.";
+307:	return "~Dogbert's tech support, how may I abuse you?~";
+308:	return "A radio hisses away.  Kitten must have been here.";
+309:	return "~Kilroy was here~";
+310:	return "~Plexar was here~";
+311:	return "~Kibo was here~";
+312:	return "It's the cork to someone's lunch.";
+313:	return "A piping-hot pizza.  Useless.";
+314:	return "Diogenes is here demanding whisky.";
+315:	return "The Monolith of Spam towers above you.";
+316:	return "~Meow meow meow meow...~  How discouraging!  It's only a recording.";
+317:	return "Marvin is complaining about the pain in the diodes down his left side.";
+318:	return "Mr. Kamikaze and Mr. DNA are here drinking tea.";
+319:	return "Rene Descarte is whistling a happy tune here.";
+320:	return "Ooh, shiny!";
+321:	return "It's a giant slorr!";
+322:	return "A ketchup bottle (nearly empty).";
+323:	return "A large pile of rubber bands.";
+324:	return "A ton of feathers.";
+325:	return "This non kitten may contain peanuts.";
+326:	return "A tree with some jelly nailed to it.";
+327:	return "Ah, the skirl of the pipes and the rustle of the silicon...";
+328:	return "You found Parakeet.  To bad this isn't ~Robot Finds Parakeet~.";
+329:	return "A ball of yarn.";
+330:	return "A big chunk of frozen chocolate pudding.";
+331:	return "There is no tea here.";
+332:	return "An automated robot-doubter.  It doesn't believe in you.";
+333:	return "A plastic model of Kitten.";
+334:	return "It's Yorgle, the Yellow Dragon.";
+335:	return "It's Grundle, the Green Dragon.";
+336:	return "It's Rhindle, the Red Dragon.";
+337:	return "An old pattern is here going on and on.";
+338:	return "TV says donuts are high in fat.";
+339:	return "It's a pool with a straw in it.";
+340:	return "A singing frog.  Useless.";
+341:	return "It's a funky beat!";
+342:	return "A tiny ceramic Kitten.  It's probably not the Kitten you're looking for.";
+343:	return "An oven mitt with kittens on it.";
+344:	return "An empty coaxial cable spool.";
+345:	return "Billions and billions of things that aren't Kitten.";
+346:	return "Snarf?";
+347:	return "Faboo!";
+348:	return "99 bottles of beer are on a wall here.";
+349:	return "Hydraulic fluid and jagged metal bits.  You recoil from the scene of carnage.";
+350:	return "A bobolink is twittering a happy tune here.";
+351:	return "Biscuits.";
+352:	return "A blank deposit slip.";
+353:	return "What's that blue thing doing here?";
+354:	return "A travel-sized cyclotron.";
+355:	return "A largish bath towel.";
+356:	return "You found Chinchilla!  Too bad this isn't ~Robot Finds Chinchilla~.";
+357:	return "A meerkat... not even close.";
+358:	return "A green yo-yo.";
+359:	return "A hairless rat.";
+360:	return "Bright copper kettles.";
 	}
 ];
