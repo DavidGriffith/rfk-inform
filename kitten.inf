@@ -111,11 +111,13 @@ Global Real_Release = 0;
 
 	@set_colour Fore_def Back_def;
 
-	if (MESSAGE_NUM < Nonkitten_Max) {
-		nonkitten_count = MESSAGE_NUM;
-	} else {
-		nonkitten_count = Nonkitten_Default;
-	}
+!	if (MESSAGE_NUM < Nonkitten_Max) {
+!		nonkitten_count = MESSAGE_NUM;
+!	} else {
+!		nonkitten_count = Nonkitten_Default;
+!	}
+
+	nonkitten_count = Nonkitten_Default;
 
 	Real_Release = (0-->1)&$03ff;
 
@@ -136,7 +138,6 @@ Global Real_Release = 0;
 		'I':	print_instructions();
 		'A':	print_about();
 		'T':	print_thoughts();
-		'P':	print_all_nki();	! See print_all_nki() below.
 		}
 		if (key == 'Q' || key == $1b)	! $1b == ESC
 			break;
@@ -868,19 +869,3 @@ Global last_right = false;
 	}
 ];
 
-
-! This function is mainly of use to members of the robotfindskitten
-! development team.
-!
-! When this function is uncommented and enabled in
-! the menu, this will cause a script file to be written which contains
-! all NKIs properly formatted.
-
-[ print_all_nki num mystring;
-	@output_stream 2; @output_stream -1;
-	for (num = 1: num <= MESSAGE_NUM: num++) {
-		mystring = lookup_msg(num);
-		print (string)lookup_msg(num), "^";
-	}
-	@output_stream -2; @output_stream 1;
-];
