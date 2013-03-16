@@ -1,6 +1,6 @@
 ! robotfindskitten
 ! A Zen Simulation
-! Release 7 / Serial number 121119 / Inform v6.32
+! Release 7 / Serial number 130315 / Inform v6.33
 !
 !     [-]       |\_/|        http://www.robotfindskitten.org
 !     (+)=C     |o o|__      Leonard Richardson (C) 1997, 2000
@@ -54,7 +54,7 @@ Constant Nonkitten_Default 20;
 Constant Nonkitten_Max	589;
 
 Release 7;
-Serial "121119";	! Presumed release date
+Serial "130315";	! Presumed release date
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
