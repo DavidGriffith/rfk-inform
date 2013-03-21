@@ -1,6 +1,6 @@
 ! robotfindskitten
 ! A Zen Simulation
-! Release 7 / Serial number 130315 / Inform v6.33
+! Release 7 / Serial number 130320 / Inform v6.33
 !
 !     [-]       |\_/|        http://www.robotfindskitten.org
 !     (+)=C     |o o|__      Leonard Richardson (C) 1997, 2000
@@ -54,7 +54,7 @@ Constant Nonkitten_Default 20;
 Constant Nonkitten_Max	589;
 
 Release 7;
-Serial "130315";	! Presumed release date
+Serial "130320";
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -355,10 +355,11 @@ Challenge release.^
 - Lots more comments in the source code.^
 - Assorted cleanups in the source code.^
 ^
-Release 7 / Serial Number 040523^
-Grammatically correct release.^
-- Grammar corrections from the POSIX port added.^
-- More NKIs added (800 total).^
+Release 7 / Serial Number 130320^
+Modular release.^
+- Synchronized NKIs and removed redundancies with the POSIX port.^
+- NKIs now generated from an external file using nki2inf.pl.^
+- NKIs reduced to 723 because of redundancies and recommended deletions.^
 ^
 ^
 Known Bugs:^
