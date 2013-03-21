@@ -4,7 +4,7 @@
 !
 !     [-]       |\_/|        http://www.robotfindskitten.org
 !     (+)=C     |o o|__      Leonard Richardson (C) 1997, 2000
-!     | |       --*--__\     David Griffith (C) 2002  (Inform Edition)
+!     | |       --*--__\     David Griffith (C) 2002-2013  (Inform Edition)
 !     OOO       C_C(____)
 !
 !
@@ -177,7 +177,7 @@ Global Real_Release = 0;
 	@set_cursor 8 30;
 	print "Leonard Richardson (C) 1997, 2000";
 	@set_cursor 9 30;
-	print "David Griffith (C) 2002  (Inform Edition)";
+	print "David Griffith (C) 2002-2013 (Inform Edition)";
 	@set_cursor 10 30;
 	print "    ", MESSAGE_NUM, " different nonkittens!";
 
