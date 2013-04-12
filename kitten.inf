@@ -24,9 +24,6 @@
 ! using the vi/rogue movement keys. The game ends when robotfindskitten.
 ! Alternatively, you may end the game by hitting the Esc or Q keys.
 !
-! Developed with Inform 6.21.4 as installed from NetBSD's pkgsrc tree
-! and Frotz 2.42.
-!
 ! 
 ! Notes:
 !	1) More than half of the code is taken up by non kitten items
@@ -87,7 +84,7 @@ Global kitten_color = 0;
 
 Global last_message = "";	! Always show the last-encountered message.
 
-Global nonkitten_count = Nonkitten_Default;
+Global nonkitten_count;
 
 Array nonkitten_x --> Nonkitten_Max;
 Array nonkitten_y --> Nonkitten_Max;
@@ -108,16 +105,13 @@ Array already_msg --> Nonkitten_Max;
 Global Real_Release = 0;
 
 [ Main key;
-
 	@set_colour Fore_def Back_def;
 
-!	if (MESSAGE_NUM < Nonkitten_Max) {
-!		nonkitten_count = MESSAGE_NUM;
-!	} else {
-!		nonkitten_count = Nonkitten_Default;
-!	}
-
-	nonkitten_count = Nonkitten_Default;
+	if (MESSAGE_NUM < Nonkitten_Default) {
+		nonkitten_count = MESSAGE_NUM;
+	} else {
+		nonkitten_count = Nonkitten_Default;
+	}
 
 	Real_Release = (0-->1)&$03ff;
 
@@ -215,7 +209,6 @@ Constant INBUFSIZE 80;
 Array inbuf -> INBUFSIZE;
 
 [ set_nonkitten_count maxnum val;
-
 	while (true) {
 		@erase_window $ffff;
 		@split_window 5;
@@ -247,7 +240,6 @@ Array inbuf -> INBUFSIZE;
 
 
 [ get_number min max init inbufvar ix cx len val;
-
 	while (true) {
 		inbuf->0 = (INBUFSIZE-3);
 		inbuf->1 = 0;
@@ -290,7 +282,6 @@ Array inbuf -> INBUFSIZE;
 
 
 [ print_about;
-
 	@erase_window $ffff;
 	@split_window TopBar;
 	@set_window 1;
@@ -411,7 +402,6 @@ Alternatively, you may end the game by hitting the Esc or Q keys.^
 
 
 [ print_thoughts;
-
 	@erase_window $ffff;
 	@split_window TopBar;
 	@set_window 1;
@@ -456,7 +446,6 @@ frozen desert beyond. ~FIND KITTEN!~^
 
 
 [ draw_big_robot x y; 
-
 	if (x == 0)
 		x = 1;
 	if (y == 0)
@@ -495,7 +484,6 @@ frozen desert beyond. ~FIND KITTEN!~^
 
 
 [ draw_big_kitten x y;
-
 	if (x == 0)
 		x = 1;
 	if (y == 0)
@@ -530,7 +518,6 @@ frozen desert beyond. ~FIND KITTEN!~^
 
 
 [ draw_big_kitten_psycho x y;
-
 	if (x == 0)
 		x = 1;
 	if (y == 0)
@@ -570,7 +557,6 @@ frozen desert beyond. ~FIND KITTEN!~^
 Global last_right = false;
 
 [ findkitten key i;
-
 	@erase_window $ffff;
 	@split_window TopBar;
 	@set_window 1;
@@ -646,7 +632,6 @@ Global last_right = false;
 
 
 [ animate_kitten key my_last_right i j junk robot_x anim_finished;
-
 	switch (key) {
 	'8', 'J', 129:	player_y++;
 	'2', 'K', 130:	player_y--;
