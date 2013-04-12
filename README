@@ -26,7 +26,6 @@ Alternatively, you may end the game by hitting the Esc or Q keys.
 =========
 Build: ||
 =========
-
 The NKI files need to be converted into a form that can be included in 
 an Inform6 program.  A Perl script, nki2inf.pl, is provided for this 
 purpose.  Invoke it like this: "nki2inf.pl *.nki > nki.inf".  Now you 
