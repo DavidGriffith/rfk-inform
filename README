@@ -1,0 +1,50 @@
+robotfindskitten
+A Zen Simulation
+Release 7 / Serial number 130320 / Inform v6.33
+
+     [-]       |\_/|        http://www.robotfindskitten.org
+     (+)=C     |o o|__      Leonard Richardson (C) 1997, 2000
+     | |       --*--__\     David Griffith (C) 2002-2013  (Inform Edition)
+     OOO       C_C(____)
+
+This Zen simulation is based on the C version v1600003.248b
+by Leonard Richardson (C) 1997, 2000.
+Written originally for the Nerth Pork robotfindskitten contest.
+Reimplemented in Inform by David Griffith (C) 2002.
+
+Lots more information on robotfindskitten is available at
+http://www.robotfindskitten.org.
+
+In this game, you are Robot (#).  Your job is to find Kitten.  This
+task is complicated by the existance of various things which are not
+kitten.  Robot must touch items to determine if they are Kitten or
+not.  Move Robot with the cursor keys, the numeric keypad, or
+using the vi/rogue movement keys. The game ends when robotfindskitten.
+Alternatively, you may end the game by hitting the Esc or Q keys.
+
+
+=========
+Build: ||
+=========
+
+The NKI files need to be converted into a form that can be included in 
+an Inform6 program.  A Perl script, nki2inf.pl, is provided for this 
+purpose.  Invoke it like this: "nki2inf.pl *.nki > nki.inf".  Now you 
+can invoke Inform6 on kitten.inf
+
+
+========
+Notes ||
+========
+1) More than half of the code is taken up by non kitten items
+   (NKIs).  When I compiled the code with just five messages and
+   no debugging code, the resulting binary was less than 10k bytes.
+
+2) If it wasn't already abundantly obvious, this program won't
+   compile to Glulx because of copious use of Z-machine assembly
+   instructions.
+      
+3) Compiling for V5 or higher is required due to "style" calls.
+   Is there a reason why someone would want to compile this for V4
+   or previous?
+
