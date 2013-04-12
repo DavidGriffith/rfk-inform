@@ -1,0 +1,2 @@
+Somehow I once found lookup_msg() being fed a number exceeding 
+MESSAGE_NUM.  I need to fix that.
